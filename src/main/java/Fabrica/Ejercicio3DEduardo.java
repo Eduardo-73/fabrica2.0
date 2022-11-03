@@ -4,6 +4,7 @@
  */
 package Fabrica;
 
+import java.util.InputMismatchException;
 import javax.swing.JOptionPane;
 
 /**
@@ -27,12 +28,34 @@ public class Ejercicio3DEduardo {
          */
         String opcion;
         String codigo;
+        double materiaPrima, manoObra, costeProduccion;
+       
+       do{
+        opcion = mostrarMenuInicial();
+         if(opcion.equalsIgnoreCase("calcular")){
+          codigo = mostrarMenuCodigos();
+          if(codigo.equalsIgnoreCase("m1")
+                || codigo.equalsIgnoreCase("p1")
+                || codigo.equalsIgnoreCase("t1")
+                || codigo.equalsIgnoreCase("m2")
+                || codigo.equalsIgnoreCase("t2")){
+              materiaPrima = materiaPrima();
+              if(leerMateriaPrima()){   
+              }
+              manoObra = manoDeObra();
+               if(leerManoDeObra()){   
+              }
+               costeProduccion = costeProduccion();
+               JOptionPane.showMessageDialog(null, """
+                                                   Con la mano de obra de %.2f y la materia prima de %2.f
+                                                   EL coste de producción es de %.2f €
+                                                   """.formatted(manoObra,materiaPrima,costeProduccion));
+              
+          }
+        }
+    }while(!opcion.equalsIgnoreCase("salir"));
+       
 
-        do {
-            opcion = mostrarMenuInicial();
-        } while (filtrarMenuInicial(opcion));
-
-        codigo = mostrarMenuCodigos();
     }
 
     public static String mostrarMenuInicial() {
@@ -52,7 +75,7 @@ public class Ejercicio3DEduardo {
 
     public static String mostrarMenuCodigos() {
 
-        String codigo = JOptionPane.showInputDialog("""
+        String txt = """
                                        
                                          INTRODUCE EL CÓDIGO DEL PRODUCTO            
                                        ------------------------------------
@@ -67,15 +90,65 @@ public class Ejercicio3DEduardo {
                                              INTRODUZCA 'SALIR'
                                          --------------------------------           
                                        -------------------------------------  
-                                                           """);
+                                                           """;
+        String codigo = JOptionPane.showInputDialog(txt);
         return codigo;
     }
 
     public static boolean filtrarCodigos(String codigo) {
-        return (!codigo.equalsIgnoreCase("m1")
+        return (!(codigo.equalsIgnoreCase("m1")
                 || codigo.equalsIgnoreCase("p1")
                 || codigo.equalsIgnoreCase("t1")
                 || codigo.equalsIgnoreCase("m2")
-                || codigo.equalsIgnoreCase("t2"));
+                || codigo.equalsIgnoreCase("t2")));
     }
+
+    //Pedir la materia prima 
+    public static double materiaPrima() {
+        double materiaPrima = 0;
+      
+        do {
+            try {
+                materiaPrima = Double.parseDouble(JOptionPane.showInputDialog("Introduce la materia prima que va ha solicitar: "));
+                break;
+            } catch (InputMismatchException ime) {
+                JOptionPane.showMessageDialog(null,
+                        "Has introducido incorrectamente la materia prima, vuelve a intentarlo");
+            }
+        } while (true);
+        return materiaPrima;
+    }
+
+    //La materia prima tiene que entrar en los perimetros
+    public static boolean leerMateriaPrima() {
+        final double MINIMO = 0.1, MAXIMO = 1;
+        return (materiaPrima() >= MINIMO && materiaPrima() <= MAXIMO);
+
+    }
+    //Pedir la mano de obra
+    public static double manoDeObra() {
+        double manoObra = 0;
+      
+        do {
+            try {
+                manoObra = Double.parseDouble(JOptionPane.showInputDialog("Introduce la mano de obra que va ha solicitar: "));
+                break;
+            } catch (InputMismatchException ime) {
+                JOptionPane.showMessageDialog(null,
+                        "Has introducido incorrectamente la mano de obra, vuelve a intentarlo");
+            }
+        } while (true);
+        return manoObra;
+    }   
+    //La mano de obra tiene que entrar en los perimetros
+    public static boolean leerManoDeObra() {
+        final double MINIMO = 0.5, MAXIMO = 0.9;
+        return (manoDeObra() >= MINIMO && manoDeObra() <= MAXIMO);
+    }
+    
+    public static double costeProduccion(){
+        double costeProduccion = materiaPrima() + manoDeObra();
+        return costeProduccion;
+    }
+    
 }
