@@ -28,33 +28,36 @@ public class Ejercicio3DEduardo {
          */
         String opcion;
         String codigo;
-        double materiaPrima, manoObra, costeProduccion;
-       
-       do{
-        opcion = mostrarMenuInicial();
-         if(opcion.equalsIgnoreCase("calcular")){
-          codigo = mostrarMenuCodigos();
-          if(codigo.equalsIgnoreCase("m1")
-                || codigo.equalsIgnoreCase("p1")
-                || codigo.equalsIgnoreCase("t1")
-                || codigo.equalsIgnoreCase("m2")
-                || codigo.equalsIgnoreCase("t2")){
-              materiaPrima = materiaPrima();
-              if(leerMateriaPrima()){   
-              }
-              manoObra = manoDeObra();
-               if(leerManoDeObra()){   
-              }
-               costeProduccion = costeProduccion();
-               JOptionPane.showMessageDialog(null, """
-                                                   Con la mano de obra de %.2f y la materia prima de %2.f
-                                                   EL coste de producción es de %.2f €
-                                                   """.formatted(manoObra,materiaPrima,costeProduccion));
-              
-          }
-        }
-    }while(!opcion.equalsIgnoreCase("salir"));
-       
+        double materiaPrima, manoObra, costeProduccion, precioUnitario;
+        int unidadesObjetivo;
+
+        do {
+            opcion = mostrarMenuInicial();
+            if (opcion.equalsIgnoreCase("calcular")) {
+                do {
+                    codigo = mostrarMenuCodigos();
+                } while (filtrarCodigos(codigo));
+
+                materiaPrima = calculoMateriaPrima();
+
+                manoObra = calculoManoDeObra();
+
+                costeProduccion = calculoCosteProduccion(materiaPrima, manoObra);
+
+                precioUnitario = calculoPrecioUnitario(costeProduccion, codigo);
+
+                unidadesObjetivo = calculoUnidadesAlcanzarBeneficio(precioUnitario, costeProduccion);
+                
+                String mensajeFinal = """
+                      Con la mano de obra de %.2f y la materia prima de %.2f.
+                      El coste de producción es de %.2f € y el precio de venta unitario es de %.2f.
+                      Para alcanzar los 2500 de beneficio tenemos que vender %d unidades.
+         """.formatted(manoObra, materiaPrima, costeProduccion, precioUnitario, unidadesObjetivo);
+
+                JOptionPane.showMessageDialog(null, mensajeFinal);
+
+            }
+        } while (!opcion.equalsIgnoreCase("salir"));
 
     }
 
@@ -103,52 +106,65 @@ public class Ejercicio3DEduardo {
                 || codigo.equalsIgnoreCase("t2")));
     }
 
-    //Pedir la materia prima 
-    public static double materiaPrima() {
+    public static double calculoMateriaPrima() {
+
+        final double MINIMO = 0.1, MAXIMO = 1;
         double materiaPrima = 0;
-      
+        String mensaje = "Introduce el coste de la materia prima,"
+                + "que debe de estar entre 0.1 y 1: ";
         do {
             try {
-                materiaPrima = Double.parseDouble(JOptionPane.showInputDialog("Introduce la materia prima que va ha solicitar: "));
-                break;
-            } catch (InputMismatchException ime) {
-                JOptionPane.showMessageDialog(null,
-                        "Has introducido incorrectamente la materia prima, vuelve a intentarlo");
+                materiaPrima = Double.parseDouble(JOptionPane.showInputDialog(mensaje));
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(null, "Introduzca un número no una letra ");
             }
-        } while (true);
+        } while (!(materiaPrima >= MINIMO && materiaPrima <= MAXIMO));
         return materiaPrima;
     }
 
-    //La materia prima tiene que entrar en los perimetros
-    public static boolean leerMateriaPrima() {
-        final double MINIMO = 0.1, MAXIMO = 1;
-        return (materiaPrima() >= MINIMO && materiaPrima() <= MAXIMO);
-
-    }
     //Pedir la mano de obra
-    public static double manoDeObra() {
+    public static double calculoManoDeObra() {
         double manoObra = 0;
-      
+        final double MAXIMO = 0.9, MINIMO = 0.5;
+        String mensaje = "Introduce el precio de mano de obra que se encuentre entre 0.5 y 0.9: ";
         do {
             try {
-                manoObra = Double.parseDouble(JOptionPane.showInputDialog("Introduce la mano de obra que va ha solicitar: "));
-                break;
-            } catch (InputMismatchException ime) {
-                JOptionPane.showMessageDialog(null,
-                        "Has introducido incorrectamente la mano de obra, vuelve a intentarlo");
+                manoObra = Double.parseDouble(JOptionPane.showInputDialog(mensaje));
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(null, "Introduzca un número no una letra ");
             }
-        } while (true);
+
+        } while (!(manoObra >= MINIMO && manoObra <= MAXIMO));
+
         return manoObra;
-    }   
-    //La mano de obra tiene que entrar en los perimetros
-    public static boolean leerManoDeObra() {
-        final double MINIMO = 0.5, MAXIMO = 0.9;
-        return (manoDeObra() >= MINIMO && manoDeObra() <= MAXIMO);
     }
-    
-    public static double costeProduccion(){
-        double costeProduccion = materiaPrima() + manoDeObra();
-        return costeProduccion;
+
+    public static double calculoCosteProduccion(double materiaPrima, double manoObra) {
+
+        return materiaPrima + manoObra;
     }
-    
+
+    public static double calculoPrecioUnitario(double costeProduccion, String codigo) {
+
+        double precioUnitario = 0;
+        final double PORCENTAJE1 = 0.5, PORCENTAJE2 = 0.65;
+
+        if (codigo.equalsIgnoreCase("m1")
+                || codigo.equalsIgnoreCase("p1")
+                || codigo.equalsIgnoreCase("m2")) {
+
+            precioUnitario = costeProduccion + (costeProduccion * PORCENTAJE1);
+        } else {
+            precioUnitario = costeProduccion + (costeProduccion * PORCENTAJE2);
+        }
+        return precioUnitario;
+    }
+
+    public static int calculoUnidadesAlcanzarBeneficio(double precioUnitario, double costeProduccion) {
+        final int OBJETIVO = 2500;
+        int unidades;
+
+        unidades = (int) Math.ceil(OBJETIVO / (precioUnitario - costeProduccion));
+        return unidades;
+    }
 }
